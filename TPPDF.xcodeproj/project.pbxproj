@@ -2132,7 +2132,7 @@
 			buildPhases = (
 				OBJ_607 /* Sources */,
 				OBJ_742 /* Frameworks */,
-				D4044DF125A1B42100DF13D5 /* ShellScript */,
+				D4044DF125A1B42100DF13D5 /* SwiftLint */,
 			);
 			buildRules = (
 			);
@@ -2210,7 +2210,7 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		D4044DF125A1B42100DF13D5 /* ShellScript */ = {
+		D4044DF125A1B42100DF13D5 /* SwiftLint */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2219,13 +2219,14 @@
 			);
 			inputPaths = (
 			);
+			name = SwiftLint;
 			outputFileListPaths = (
 			);
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if which swiftlint >/dev/null; then\n   \"swiftlint\" --config .swiftlint.yml\nelse\n   echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+			shellPath = /bin/bash;
+			shellScript = "if which swiftlint >/dev/null; then\n   if [ -z \"$CI\"]; then\n       \"swiftlint\" --config .swiftlint.yml\n   else \n       echo \"Skipping as in CI...\"\n   fi\nelse\n   echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
