@@ -284,6 +284,7 @@ internal class PDFTableObject: PDFRenderObject {
         let startPosition: CGPoint = cells.first?.frames.cell.origin ?? .zero
         var nextPageCells: [PDFTableCalculatedCell] = cells
         var pageEnd = CGPoint.null
+        var headerShift = true
 
         repeat {
             var pageStart = CGPoint.null
@@ -296,7 +297,9 @@ internal class PDFTableObject: PDFRenderObject {
                     var cellFrame = item.frames.cell
                     var contentFrame = item.frames.content
                     cellFrame.origin.y -= startPosition.y - minOffset
+                    cellFrame.origin.y += table.margin
                     contentFrame.origin.y -= startPosition.y - minOffset
+                    contentFrame.origin.y += table.margin
 
                     pageStart = pageStart == .null ? cellFrame.origin : pageStart
                     pageEnd = CGPoint(x: cellFrame.maxX, y: cellFrame.maxY) + CGPoint(x: table.margin, y: table.margin)
@@ -328,6 +331,13 @@ internal class PDFTableObject: PDFRenderObject {
                     result += try sliceObject.calculate(generator: generator, container: container)
                 }
                 minOffset +=  headerHeight
+            }
+            if !firstPage {
+                // shift the rest of the cells down by headerHeight
+                if headerShift {
+                    nextPageCells = shiftCellsBy(cells: nextPageCells, shiftValue: headerHeight)
+                    headerShift = false
+                }
             }
 
             let filterResult = filterCellsOnPage(for: generator,
@@ -449,6 +459,21 @@ internal class PDFTableObject: PDFRenderObject {
             }
         }
         return result
+    }
+
+    internal typealias ShiftedCells = ([PDFTableCalculatedCell])
+
+    internal func shiftCellsBy(cells: [PDFTableCalculatedCell], shiftValue: CGFloat) -> ShiftedCells {
+        var shiftedCells: [PDFTableCalculatedCell] = []
+
+        for cell in cells {
+            var shiftedCell = cell
+
+            shiftedCell.frames.cell.origin.y += shiftValue
+            shiftedCell.frames.content.origin.y += shiftValue
+            shiftedCells.append(shiftedCell)
+        }
+        return shiftedCells
     }
 
     internal func createSliceObject(frame: CGRect, elements: [PDFRenderObject], minOffset: CGFloat, maxOffset: CGFloat) -> PDFSlicedObject {
